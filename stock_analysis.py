@@ -1,4 +1,4 @@
-import tushare as ts
+import pandas_datareader.data as web
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -11,29 +11,22 @@ plt.rcParams['axes.unicode_minus'] = False
 
 def fetch_stock_data(ticker, start_date, end_date):
     """
-    获取A股日线数据（使用tushare，国内稳定无时区问题）
-    ticker格式：6位数字（如600000，无需.SS后缀）
+    使用 stooq 数据源获取股票数据（GitHub Actions 环境稳定可用）
+    支持标的：
+    - 美股：AAPL, MSFT, TSLA
+    - A股：600000.SS（浦发银行）、000001.SZ（平安银行）
     """
     try:
-        # tushare获取日线数据（无需token即可获取基础数据）
-        df = ts.get_hist_data(
-            ticker,
-            start=start_date.strftime('%Y-%m-%d'),
-            end=end_date.strftime('%Y-%m-%d')
-        )
-        
-        if df is None or df.empty:
-            raise ValueError(f"未获取到 {ticker} 的数据，请检查股票代码是否为6位A股代码")
-        
-        # 反转数据为时间正序（tushare默认返回倒序）
-        df = df.iloc[::-1]
-        # 重命名列以兼容后续分析逻辑
-        df.rename(columns={'close': 'Close'}, inplace=True)
+        # 使用 stooq 数据源，海外访问稳定
+        df = web.DataReader(ticker, 'stooq', start_date, end_date)
+        if df.empty:
+            raise ValueError(f"未获取到 {ticker} 的数据，请检查标的代码")
+        # 按时间正序排列
+        df = df.sort_index()
         return df
-    
     except Exception as e:
         print(f"【数据获取失败】{ticker} - {str(e)}")
-        print("👉 建议：1. 确认股票代码为6位数字（如600000） 2. 检查网络连接")
+        print("👉 建议：1. 更换美股标的（如AAPL） 2. 检查标的代码格式")
         raise
 
 def ai_trend_analysis(df):
@@ -67,10 +60,10 @@ def ai_trend_analysis(df):
 def generate_report(analysis_result, ticker, start_date, end_date):
     """生成分析报告"""
     ticker_name_map = {
-        "600000": "浦发银行",
-        "000001": "平安银行",
-        "601318": "中国平安",
-        "600519": "贵州茅台"
+        "AAPL": "苹果公司",
+        "MSFT": "微软公司",
+        "600000.SS": "浦发银行",
+        "000001.SZ": "平安银行"
     }
     ticker_name = ticker_name_map.get(ticker, ticker)
 
@@ -102,8 +95,8 @@ def generate_report(analysis_result, ticker, start_date, end_date):
     print(f"✅ 报告生成成功：analysis_report.md（标的：{ticker_name}）")
 
 def main():
-    """主函数（默认分析浦发银行600000）"""
-    TICKER = "600000"  # 6位数字A股代码，无需.SS后缀
+    """主函数（默认分析美股AAPL，GitHub Actions最稳定）"""
+    TICKER = "AAPL"  # 优先用美股，GitHub Actions环境访问最稳定
     DAYS_BACK = 90
 
     end_date = datetime.date.today()
