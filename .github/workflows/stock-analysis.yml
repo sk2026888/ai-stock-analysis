@@ -1,45 +1,38 @@
 name: AI Stock Analysis
 
-# 触发规则：每天UTC时间8点自动执行 + 允许手动触发
+# 触发规则：每天UTC8点（北京时间16点）+ 手动触发
 on:
   schedule:
-    - cron: '0 8 * * *'  # 每天8点执行（UTC时间，对应北京时间16点）
-  workflow_dispatch:     # 手动触发（方便测试）
+    - cron: '0 8 * * *'
+  workflow_dispatch:
 
 jobs:
   analyze-stock:
-    runs-on: ubuntu-latest  # 使用最新版Ubuntu系统运行
-    
+    runs-on: ubuntu-latest
     steps:
-      # 步骤1：拉取仓库代码到运行环境
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-      
-      # 步骤2：设置Python环境（指定版本）
-      - name: Set up Python
+
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # 匹配脚本兼容的Python版本
-      
-      # 步骤3：安装依赖包（根据requirements.txt）
+          python-version: '3.11'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      # 步骤4：运行股票分析脚本
+
       - name: Run stock analysis
         run: python stock_analysis.py
-      
-      # 步骤5：将生成的分析报告提交回仓库（可选但实用）
-      - name: Commit and push report
+
+      - name: Commit report to repo
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add analysis_report.md
-          # 仅当文件有变化时才提交（避免空提交）
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update stock analysis report $(date +'%Y-%m-%d')"
+          # 仅当文件有变化时提交（避免空提交）
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update stock report $(date +'%Y-%m-%d')"
           git push
         env:
-          # 使用GitHub内置的token授权推送代码
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
