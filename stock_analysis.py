@@ -82,7 +82,7 @@ def generate_report(analysis_result, ticker, start_date, end_date):
 def main():
     """主函数"""
     # 配置参数（可根据需要修改）
-    TICKER = "AAPL"  # 苹果股票，可替换为其他标的如 "MSFT" "TSLA" "600000.SS"（浦发银行）
+    TICKER = "600000.SS"  # 苹果股票，可替换为其他标的如 "MSFT" "TSLA" "600000.SS"（浦发银行）
     DAYS_BACK = 90   # 分析过去90天数据
     
     # 计算日期范围
