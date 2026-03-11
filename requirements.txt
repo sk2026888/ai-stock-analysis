@@ -1,5 +1,5 @@
-yfinance==0.2.43       # 最新稳定版，修复接口兼容问题
-pandas==2.2.2          # 数据处理核心库
-scikit-learn==1.4.2    # 线性回归模型
-numpy==1.26.4          # 数值计算
-matplotlib==3.8.4      # 备用绘图（当前代码未使用）
+tushare==1.2.89
+pandas==2.2.2
+scikit-learn==1.4.2
+numpy==1.26.4
+matplotlib==3.8.4
